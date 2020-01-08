@@ -3,7 +3,7 @@ const admin = require('firebase-admin')
 require('dotenv').config()
 
 //serve
-admin.initializeApp({ credential: admin.credential.cert(require('../keys/admin.json')) })
+admin.initializeApp({ credential: admin.credential.cert(require('./keys/admin.json')) })
 
 //deploy
 //admin.initializeApp()
@@ -18,16 +18,17 @@ const config = {
   appId: process.env.appId,
   measurementId: process.env.measurementId
 }
+console.log(config)
 
 const app = require('express')()
 
 const firebase = require('firebase')
 firebase.initializeApp(config)
 
-const db = admin.firestore()
-
 app.get('/screams', (req, res) => {
-  db.collection('screams')
+  admin
+    .firestore()
+    .collection('screams')
     .orderBy('createdAt', 'desc')
     .get()
     .then(data => {
@@ -52,7 +53,9 @@ app.post('/scream', (req, res) => {
     createdAt: new Date().toISOString()
   }
 
-  db.collection('screams')
+  admin
+    .firestore()
+    .collection('screams')
     .add(newScream)
     .then(doc => {
       res.json({ message: `document ${doc.id} created successfully` })
@@ -71,40 +74,15 @@ app.post('/signup', (req, res) => {
     handle: req.body.handle
   }
 
-  let token, userId
-  db.doc(`/users/${newUser.handle}`)
-    .get()
-    .then(doc => {
-      if (doc.exists) {
-        return res.status(400).json({ handle: 'This handle already exists.' })
-      } else {
-        return firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
-      }
-    })
+  firebase
+    .auth()
+    .createUserWithEmailAndPassword(newUser.email, newUser.password)
     .then(data => {
-      userId = data.user.uid
-      return data.user.getIdToken()
-    })
-    .then(token => {
-      token = token
-      const userCredentials = {
-        handle: newUser.handle,
-        email: newUser.email,
-        createdAt: new Date().toISOString(),
-        userId
-      }
-      return db.doc(`/users/${newUser.handle}`).set(userCredentials)
-    })
-    .then(() => {
-      return res.status(201).json({ token })
+      return res.status(201).json({ message: `user ${data.user.uid} signed up successfully.` })
     })
     .catch(err => {
       console.error(err)
-      if (err.code === 'auth/email-already-in-use') {
-        return res.status(400).json({ email: 'Email is already registered.' })
-      } else {
-        return res.status(500).json({ error: err.code })
-      }
+      return res.status(500).json({ error: err.code })
     })
 })
 
