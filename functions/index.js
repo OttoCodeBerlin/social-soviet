@@ -63,6 +63,15 @@ app.post('/scream', (req, res) => {
     })
 })
 
+const isEmail = email => {
+  var regexp = /\S+@\S+\.\S+/
+  return regexp.test(String(email).toLowerCase())
+}
+
+const isEmpty = string => {
+  string.trim() === '' ? true : false
+}
+
 app.post('/signup', (req, res) => {
   const newUser = {
     email: req.body.email,
@@ -70,6 +79,20 @@ app.post('/signup', (req, res) => {
     confirmPassword: req.body.confirmPassword,
     handle: req.body.handle
   }
+
+  let errors = {}
+
+  if (isEmpty(newUser.email)) {
+    errors.email = 'Field must not be empty.'
+  } else if (!isEmail(newUser.email)) {
+    errors.email = 'Must be a valid email address.'
+  }
+
+  if (isEmpty(newUser.password)) errors.password = 'Field must not be empty.'
+  if (newUser.password !== newUser.confirmPassword) errors.confirmPassword = 'Passwords must match.'
+  if (isEmpty(newUser.handle)) errors.handle = 'Field must not be empty.'
+
+  if (Object.keys(errors).length > 0) return res.status(400).json(errors)
 
   let token, userId
   db.doc(`/users/${newUser.handle}`)
@@ -85,8 +108,8 @@ app.post('/signup', (req, res) => {
       userId = data.user.uid
       return data.user.getIdToken()
     })
-    .then(token => {
-      token = token
+    .then(idToken => {
+      token = idToken
       const userCredentials = {
         handle: newUser.handle,
         email: newUser.email,
@@ -102,6 +125,37 @@ app.post('/signup', (req, res) => {
       console.error(err)
       if (err.code === 'auth/email-already-in-use') {
         return res.status(400).json({ email: 'Email is already registered.' })
+      } else {
+        return res.status(500).json({ error: err.code })
+      }
+    })
+})
+
+app.post('/login', (req, res) => {
+  const user = {
+    email: req.body.email,
+    password: req.body.password
+  }
+  let errors = {}
+
+  if (isEmpty(user.email)) errors.email = 'Field must not be empty.'
+  if (isEmpty(user.password)) errors.password = 'Field must not be empty.'
+
+  if (Object.keys(errors).length > 0) return res.status(400).json(errors)
+
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(user.email, user.password)
+    .then(data => {
+      return data.user.getIdToken()
+    })
+    .then(token => {
+      return res.json({ token })
+    })
+    .catch(err => {
+      console.error(err)
+      if (err.code === 'auth/wrong-password') {
+        return res.status(403).json({ general: 'Wrong credentials, please try again' })
       } else {
         return res.status(500).json({ error: err.code })
       }
