@@ -32,13 +32,18 @@ exports.postOneScream = (req, res) => {
   const newScream = {
     body: req.body.body,
     userHandle: req.user.handle,
-    createdAt: new Date().toISOString()
+    userImage: req.user.imageUrl,
+    createdAt: new Date().toISOString(),
+    likeCount: 0,
+    commentCount: 0
   }
 
   db.collection('screams')
     .add(newScream)
     .then(doc => {
-      res.json({ message: `document ${doc.id} created successfully` })
+      const responseScream = newScream
+      responseScream.screamId = doc.id
+      res.json(responseScream)
     })
     .catch(err => {
       res.status(500).json({ error: 'Some Shit went wrong' })
