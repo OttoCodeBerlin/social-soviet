@@ -51,4 +51,5 @@ exports.reduceUserDetails = data => {
   if (!isEmpty(data.location.trim())) userDetails.location = data.location
 
   return userDetails
+  retu
 }
