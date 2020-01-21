@@ -132,21 +132,10 @@ exports.likeScream = (req, res) => {
     })
     .then(data => {
       if (data.empty) {
-        return db
-          .collection('likes')
-          .add({
-            screamId: req.params.screamId,
-            userHandle: req.user.handle
-          })
-          .then(() => {
-            screamData.likeCount++
-            return screamDocument.update({ likeCount: screamData.likeCount })
-          })
-          .then(() => {
-            return res.json(screamData)
-          })
-      } else {
-        return res.status(400).json({ error: 'Scream already liked' })
+        return res.status(400).json({error: 'Scream not liked'})
+      }
+      else {
+        return db.doc('likes').doc()
       }
     })
     .catch(err => {
@@ -154,3 +143,5 @@ exports.likeScream = (req, res) => {
       res.status(500).json({ error: err.code })
     })
 }
+
+exports.unlike

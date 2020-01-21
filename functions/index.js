@@ -21,7 +21,7 @@ app.get('/scream/:screamId', getScream)
 app.post('/scream/:screamId/comment', FBauth, commentOnScream)
 app.post('/scream/:screamId/like', FBauth, likeScream)
 // app.post('/scream/:screamId/unlike', FBauth, unlikeScream)
-//3:11:26
+//3:13:10
 //Todo: delete scream, like scream, unlike scream, comment on scream
 
 //User routes
