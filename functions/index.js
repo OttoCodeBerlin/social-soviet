@@ -10,7 +10,8 @@ const {
   getScream,
   commentOnScream,
   likeScream,
-  unlikeScream
+  unlikeScream,
+  deleteScream
 } = require('./handlers/screams')
 const { signup, login, uploadImage, addUserDetails, getAuthenticatedUser } = require('./handlers/users')
 
@@ -18,11 +19,12 @@ const { signup, login, uploadImage, addUserDetails, getAuthenticatedUser } = req
 app.get('/screams', getAllScreams)
 app.post('/scream', FBauth, postOneScream)
 app.get('/scream/:screamId', getScream)
+app.delete('/scream/:screamId', FBauth, deleteScream)
 app.post('/scream/:screamId/comment', FBauth, commentOnScream)
 app.get('/scream/:screamId/like', FBauth, likeScream)
 app.get('/scream/:screamId/unlike', FBauth, unlikeScream)
+
 //3:20:23
-//Todo: delete scream
 
 //User routes
 app.post('/signup', signup)
