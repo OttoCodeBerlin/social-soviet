@@ -24,7 +24,7 @@ app.post('/scream/:screamId/comment', FBauth, commentOnScream)
 app.get('/scream/:screamId/like', FBauth, likeScream)
 app.get('/scream/:screamId/unlike', FBauth, unlikeScream)
 
-//3:20:23
+//3:25:50
 
 //User routes
 app.post('/signup', signup)
