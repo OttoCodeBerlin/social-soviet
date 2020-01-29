@@ -35,7 +35,7 @@ app.post('/scream/:screamId/comment', FBauth, commentOnScream)
 app.get('/scream/:screamId/like', FBauth, likeScream)
 app.get('/scream/:screamId/unlike', FBauth, unlikeScream)
 
-//3:51:25
+//4:23:46
 
 //User routes
 app.post('/signup', signup)
@@ -115,7 +115,6 @@ exports.onUserImageChange = functions
         .collection('screams')
         .where('userHandle', '==', change.before.data().handle)
         .get()
-
         .then(data => {
           data.forEach(doc => {
             const scream = db.doc(`/screams/${doc.id}`)
@@ -123,7 +122,7 @@ exports.onUserImageChange = functions
           })
           return batch.commit()
         })
-    }
+    } else return true
   })
 
 exports.onScreamDelete = functions
@@ -141,14 +140,20 @@ exports.onScreamDelete = functions
         data.forEach(doc => {
           batch.delete(db.doc(`/comments/${doc.id}`))
         })
-        return db.collection('likes').where('screamId', '==', screamId)
+        return db
+          .collection('likes')
+          .where('screamId', '==', screamId)
+          .get()
       })
 
       .then(data => {
         data.forEach(doc => {
           batch.delete(db.doc(`/likes/${doc.id}`))
         })
-        return db.collection('notifications').where('screamId', '==', screamId)
+        return db
+          .collection('notifications')
+          .where('screamId', '==', screamId)
+          .get()
       })
 
       .then(data => {
@@ -156,6 +161,6 @@ exports.onScreamDelete = functions
           batch.delete(db.doc(`/notifications/${doc.id}`))
         })
         return batch.commit()
-       })
-       .catch(err=> console.error(err))
+      })
+      .catch(err => console.error(err))
   })
